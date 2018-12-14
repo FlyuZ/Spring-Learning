@@ -1,0 +1,28 @@
+body{
+    width:960px;
+    margin:0px auto;
+}
+iframe{
+    margin:0px;
+    padding:0px;
+    border:0px;
+    float:left;
+}
+.header{
+    width:960px;
+    height:70px;
+}
+.center{
+    min-height:500px;
+    height: auto;
+}
+.main{
+    width:760px;
+}
+.list{
+    width:200px;
+}
+.footer{
+    width:960px;
+    height: 60px;
+}
