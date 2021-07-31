@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+
+<body>
+    <div id="app">
+        <el-form :label-position="labelPosition" label-width="80px" :model="formLabelAlign" :rules="rules"
+            ref="formLabelAlign">
+            <el-form-item label="姓名" prop="name">
+                <el-input v-model="formLabelAlign.name"></el-input>
+            </el-form-item>
+            <el-form-item label="职称" prop="title">
+                <el-input v-model="formLabelAlign.title"></el-input>
+            </el-form-item>
+            <el-form-item label="单位" prop="company">
+                <el-input v-model="formLabelAlign.company"></el-input>
+            </el-form-item>
+            <el-form-item label="联系方式" prop="phone">
+                <el-input v-model="formLabelAlign.phone"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="submitForm('formLabelAlign')">提交</el-button>
+                <el-button @click="resetForm('formLabelAlign')">重置</el-button>
+            </el-form-item>
+        </el-form>
+    </div>
+</body>
+
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                labelPosition: 'right',
+                formLabelAlign: {
+                    name: '',
+                    title: '',
+                    company: '',
+                    phone: ''
+                },
+                rules: {
+                    // name: [
+                    //     { required: true, message: '请输入姓名', trigger: 'blur' },
+                    // ],
+                    // title: [
+                    //     { required: true, message: '请输入职称', trigger: 'blur' }
+                    // ],
+                    // company: [
+                    //     { required: true, message: '请输入单位', trigger: 'blur' }
+                    // ],
+                    // phone: [
+                    //     { required: true, message: '请输入联系方式', trigger: 'blur' }
+                    // ]
+                },
+            };
+        },
+
+        methods: {
+            submitForm(formName) {
+                // this.$refs[formName].validate((valid) => {
+                //     if (valid) {
+                //         console.log()
+                //         alert('submit!');
+                //     } else {
+                //         console.log('error submit!!');
+                //         return false;
+                //     }
+                // });
+                let formData = new FormData();
+                for (var key in this.formLabelAlign) {
+                    formData.append(key, this.formLabelAlign[key]);
+                }
+                axios({
+                    method: "post",
+                    url: "/submitForm",
+                    // withCredentials: true,
+                    data: formData
+                }).then((res) => {
+                    this.res = res.data;
+                    if (this.res === "success") {
+                        console.log(this.res);
+                        alert('submit!');
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            }
+        }
+    })
+</script>
+
+</html>
