@@ -1,6 +1,6 @@
 package spring.context;
 
-import spring.beans.BeansException;
+import spring.test.bean.BeansException;
 
 public interface ConfigurableApplicationContext extends ApplicationContext {
     /**

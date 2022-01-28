@@ -1,40 +1,96 @@
 package spring;
 
-import cn.hutool.core.io.IoUtil;
-import org.junit.Before;
+import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Test;
-import spring.beans.UserDao;
-import spring.beans.UserService;
-import spring.beans.PropertyValue;
-import spring.beans.PropertyValues;
-import spring.beans.factory.config.BeanDefinition;
-import spring.beans.factory.config.BeanReference;
-import spring.beans.factory.support.DefaultListableBeanFactory;
-import spring.beans.factory.xml.XmlBeanDefinitionReader;
-import spring.context.support.ClassPathXmlApplicationContext;
-import spring.core.io.DefaultResourceLoader;
-import spring.core.io.Resource;
+import spring.aop.*;
+import spring.aop.aspectj.AspectJExpressionPointcut;
+import spring.aop.framework.Cglib2AopProxy;
+import spring.aop.framework.JdkDynamicAopProxy;
+import spring.aop.framework.ReflectiveMethodInvocation;
+import spring.test.bean.IUserService;
+import spring.test.bean.UserService;
+import spring.test.bean.UserServiceInterceptor;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 public class ApiTest {
 
     @Test
-    public void test_xml() {
-        // 1.初始化 BeanFactory
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring.xml");
-        applicationContext.registerShutdownHook();
+    public void test_aop() throws NoSuchMethodException {
+        AspectJExpressionPointcut pointcut = new AspectJExpressionPointcut("execution(* spring.test.bean.UserService.*(..))");
 
-        // 2. 获取Bean对象调用方法
-        UserService userService = applicationContext.getBean("userService", UserService.class);
-        String result = userService.queryUserInfo();
-        System.out.println("测试结果：" + result);
+        Class<UserService> clazz = UserService.class;
+        Method method = clazz.getDeclaredMethod("queryUserInfo");
+
+        System.out.println(pointcut.matches(clazz));
+        System.out.println(pointcut.matches(method, clazz));
     }
 
     @Test
-    public void test_hook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> System.out.println("close！")));
+    public void test_dynamic() {
+        // 目标对象
+        IUserService userService = new UserService();
+        // 组装代理信息
+        AdvisedSupport advisedSupport = new AdvisedSupport();
+        advisedSupport.setTargetSource(new TargetSource(userService));
+        advisedSupport.setMethodInterceptor(new UserServiceInterceptor());
+        advisedSupport.setMethodMatcher(new AspectJExpressionPointcut("execution(* spring.test.bean.IUserService.*(..))"));
+
+        // 代理对象(JdkDynamicAopProxy)
+        IUserService proxy_jdk = (IUserService) new JdkDynamicAopProxy(advisedSupport).getProxy();
+        // 测试调用
+        System.out.println("测试结果：" + proxy_jdk.queryUserInfo());
+
+        // 代理对象(Cglib2AopProxy)
+        IUserService proxy_cglib = (IUserService) new Cglib2AopProxy(advisedSupport).getProxy();
+        // 测试调用
+        System.out.println("测试结果：" + proxy_cglib.register("花花"));
+    }
+
+    @Test
+    public void test_proxy_class() {
+        IUserService userService = (IUserService) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{IUserService.class}, (proxy, method, args) -> "你被代理了！");
+        String result = userService.queryUserInfo();
+        System.out.println("测试结果：" + result);
+
+    }
+
+    @Test
+    public void test_proxy_method() {
+        // 目标对象(可以替换成任何的目标对象)
+        Object targetObj = new UserService();
+
+        // AOP 代理
+        IUserService proxy = (IUserService) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), targetObj.getClass().getInterfaces(), new InvocationHandler() {
+            // 方法匹配器
+            MethodMatcher methodMatcher = new AspectJExpressionPointcut("execution(* spring.test.bean.IUserService.*(..))");
+
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                if (methodMatcher.matches(method, targetObj.getClass())) {
+                    // 方法拦截器
+                    MethodInterceptor methodInterceptor = invocation -> {
+                        long start = System.currentTimeMillis();
+                        try {
+                            return invocation.proceed();
+                        } finally {
+                            System.out.println("监控 - Begin By AOP");
+                            System.out.println("方法名称：" + invocation.getMethod().getName());
+                            System.out.println("方法耗时：" + (System.currentTimeMillis() - start) + "ms");
+                            System.out.println("监控 - End\r\n");
+                        }
+                    };
+                    // 反射调用
+                    return methodInterceptor.invoke(new ReflectiveMethodInvocation(targetObj, method, args));
+                }
+                return method.invoke(targetObj, args);
+            }
+        });
+
+        String result = proxy.queryUserInfo();
+        System.out.println("测试结果：" + result);
+
     }
 
 }

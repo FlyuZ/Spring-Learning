@@ -1,6 +1,6 @@
 package spring.context;
 
-import spring.beans.factory.ListableBeanFactory;
+import spring.test.bean.factory.ListableBeanFactory;
 
 public interface ApplicationContext extends ListableBeanFactory {
 }

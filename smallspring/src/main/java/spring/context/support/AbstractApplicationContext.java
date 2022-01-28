@@ -1,9 +1,9 @@
 package spring.context.support;
 
-import spring.beans.BeansException;
-import spring.beans.factory.ConfigurableListableBeanFactory;
-import spring.beans.factory.config.BeanFactoryPostProcessor;
-import spring.beans.factory.config.BeanPostProcessor;
+import spring.test.bean.BeansException;
+import spring.test.bean.factory.ConfigurableListableBeanFactory;
+import spring.test.bean.factory.config.BeanFactoryPostProcessor;
+import spring.test.bean.factory.config.BeanPostProcessor;
 import spring.context.ConfigurableApplicationContext;
 import spring.core.io.DefaultResourceLoader;
 
@@ -13,6 +13,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 
     @Override
     public void refresh() throws BeansException {
+        //在实际Spring中，还会加锁，防止重复启动
         // 1. 创建 BeanFactory，并加载 BeanDefinition
         refreshBeanFactory();
 

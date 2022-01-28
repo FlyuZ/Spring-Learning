@@ -1,6 +1,6 @@
 package spring.context.support;
 
-import spring.beans.BeansException;
+import spring.test.bean.BeansException;
 
 public class ClassPathXmlApplicationContext extends AbstractXmlApplicationContext {
 

@@ -1,7 +1,7 @@
 package spring.context.support;
 
-import spring.beans.factory.support.DefaultListableBeanFactory;
-import spring.beans.factory.xml.XmlBeanDefinitionReader;
+import spring.test.bean.factory.support.DefaultListableBeanFactory;
+import spring.test.bean.factory.xml.XmlBeanDefinitionReader;
 
 public abstract class AbstractXmlApplicationContext extends AbstractRefreshableApplicationContext {
 
